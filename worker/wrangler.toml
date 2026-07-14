@@ -1,0 +1,13 @@
+name = "agc-informe-ia"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Binding de Workers AI: habilita env.AI para generar los informes.
+[ai]
+binding = "AI"
+
+# Base de datos D1: habilita env.DB para guardar y consultar el historial.
+[[d1_databases]]
+binding = "DB"
+database_name = "agc-informe-ia-db"
+database_id = "ce127e5f-958a-403f-b98b-1cb91aaff24a"

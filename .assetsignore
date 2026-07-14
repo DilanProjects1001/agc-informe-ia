@@ -1,0 +1,7 @@
+_edge*
+node_modules
+.wrangler
+ui_shots
+.git
+.dev.vars
+worker

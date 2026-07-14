@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InformeIA - Generador de informes con IA</title>
+  <style>
+    :root {
+      --bg: #0d1220; --panel: #161d31; --elev: #1e2740; --borde: #2c3757;
+      --texto: #eaf0fb; --suave: #97a5c6; --acento: #5b8dff; --acento2: #37d3b0;
+      --sombra: 0 10px 32px rgba(0,0,0,.42); --radio: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, "Segoe UI", -apple-system, Arial, sans-serif;
+      background: radial-gradient(1100px 560px at 85% -12%, #1a2748, var(--bg) 55%), var(--bg);
+      color: var(--texto); min-height: 100vh; line-height: 1.55;
+    }
+    header { padding: 20px 26px; border-bottom: 1px solid var(--borde); background: rgba(13,18,32,.7); }
+    .brand { display: flex; align-items: center; gap: 14px; max-width: 1120px; margin: 0 auto; }
+    .logo { font-size: 30px; width: 56px; height: 56px; display: grid; place-items: center;
+      background: var(--elev); border: 1px solid var(--borde); border-radius: 16px; }
+    header h1 { margin: 0; font-size: 22px; }
+    header h1 span { background: linear-gradient(90deg, var(--acento), var(--acento2));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .tagline { margin: 2px 0 0; color: var(--suave); font-size: 13.5px; }
+
+    main { max-width: 1120px; margin: 0 auto; padding: 24px; display: grid;
+      grid-template-columns: 1fr 1.1fr; gap: 22px; align-items: start; }
+    @media (max-width: 880px) { main { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio);
+      padding: 22px; box-shadow: var(--sombra); }
+    .panel h2 { margin: 0 0 14px; font-size: 19px; }
+    label { display: block; font-size: 13px; color: var(--suave); font-weight: 600; margin: 14px 0 6px; }
+    label:first-of-type { margin-top: 0; }
+
+    textarea, select {
+      width: 100%; background: var(--elev); border: 1px solid var(--borde); color: var(--texto);
+      border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit;
+    }
+    textarea { resize: vertical; line-height: 1.55; }
+    textarea:focus, select:focus { outline: none; border-color: var(--acento); box-shadow: 0 0 0 3px rgba(91,141,255,.2); }
+    .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 520px) { .fila { grid-template-columns: 1fr; } }
+
+    .btn {
+      border: 0; cursor: pointer; font-family: inherit; font-weight: 700; border-radius: 10px;
+      padding: 14px 18px; font-size: 15.5px; width: 100%; margin-top: 18px;
+      background: linear-gradient(90deg, var(--acento), #7ba2ff); color: #fff;
+      transition: transform .08s, filter .15s;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:active { transform: translateY(1px); }
+
+    #resultArea { min-height: 320px; }
+    .placeholder { color: var(--suave); font-size: 14px; display: grid; place-items: center;
+      text-align: center; height: 300px; }
+    .doc { background: var(--elev); border: 1px solid var(--borde); border-radius: 12px; padding: 22px 24px; }
+    .doc h1 { font-size: 22px; margin: 0 0 6px; }
+    .doc h2 { font-size: 17px; margin: 20px 0 8px; color: var(--acento2); border-bottom: 1px solid var(--borde); padding-bottom: 5px; }
+    .doc h3 { font-size: 15px; margin: 14px 0 6px; }
+    .doc p { margin: 8px 0; font-size: 14.5px; }
+    .doc ul { margin: 8px 0; padding-left: 22px; }
+    .doc li { margin: 4px 0; font-size: 14.5px; }
+    .doc strong { color: #fff; }
+    .nota-sim { margin-top: 16px; font-size: 12px; color: var(--suave); font-style: italic;
+      border-top: 1px dashed var(--borde); padding-top: 10px; }
+
+    .ayuda { color: var(--suave); font-size: 13px; margin: 2px 0 14px; }
+    .historial { grid-column: 1 / -1; }
+    .hist-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .btn-sec { border: 1px solid var(--borde); background: var(--elev); color: var(--texto);
+      border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-sec:hover { border-color: var(--acento); }
+    .hist-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .hist-item { background: var(--elev); border: 1px solid var(--borde); border-left: 3px solid var(--acento);
+      border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: border-color .15s; }
+    .hist-item:hover { border-color: var(--acento); }
+    .hist-item .h-tit { font-weight: 700; font-size: 14px; }
+    .hist-item .h-meta { color: var(--suave); font-size: 12px; margin-top: 3px; }
+    .hist-item .h-snip { color: var(--suave); font-size: 12.5px; margin-top: 7px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .hist-vacio { color: var(--suave); font-size: 13.5px; font-style: italic; grid-column: 1 / -1; padding: 6px 2px; }
+
+    footer { text-align: center; color: var(--suave); font-size: 12.5px;
+      padding: 20px; border-top: 1px solid var(--borde); margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">📝</div>
+      <div>
+        <h1>Informe<span>IA</span></h1>
+        <p class="tagline">Convierte tus notas en un informe profesional con IA</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Formulario -->
+    <section class="panel">
+      <h2>1. Tus datos</h2>
+      <label for="notesInput">Notas / ideas</label>
+      <textarea id="notesInput" rows="9" placeholder="Pega aqui tus notas, puntos clave o ideas sueltas...&#10;Ej: Reunion con el equipo. Se reviso el avance del sitio web. Falta la pasarela de pago. Juan entrega el diseno el viernes."></textarea>
+
+      <div class="fila">
+        <div>
+          <label for="templateSelect">Tipo de informe</label>
+          <select id="templateSelect">
+            <option value="Acta de reunión">Acta de reunión</option>
+            <option value="Estado de proyecto">Estado de proyecto</option>
+            <option value="Propuesta comercial">Propuesta comercial</option>
+            <option value="Informe de investigación">Informe de investigación</option>
+          </select>
+        </div>
+        <div>
+          <label for="toneSelect">Tono</label>
+          <select id="toneSelect">
+            <option value="Formal">Formal</option>
+            <option value="Directo">Directo</option>
+            <option value="Detallado">Detallado</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="generateBtn" class="btn" type="button">✨ Generar informe</button>
+    </section>
+
+    <!-- Resultado -->
+    <section class="panel">
+      <h2>2. Vista previa del informe</h2>
+      <div id="resultArea">
+        <div class="placeholder">Aqui aparecera el informe generado. Completa tus notas y pulsa "Generar informe".</div>
+      </div>
+    </section>
+    <!-- Historial (ancho completo) -->
+    <section class="panel historial">
+      <div class="hist-head">
+        <h2>3. Historial de informes</h2>
+        <button id="toggleHist" class="btn-sec" type="button">Ocultar</button>
+      </div>
+      <p class="ayuda">Informes generados anteriormente (se guardan en la base de datos). Haz clic en uno para verlo.</p>
+      <div id="historialLista" class="hist-lista" aria-live="polite">
+        <div class="hist-vacio">Cargando historial...</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>InformeIA · Proyecto de portafolio full-stack con IA · Version inicial (informe de ejemplo simulado)</span>
+  </footer>
+
+  <script>
+    'use strict';
+
+    /* -------- Mini-render de Markdown a HTML (sin librerias ni CDNs) -------- */
+    function escaparHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>]/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c];
+      });
+    }
+    function negritas(s) {
+      return escaparHtml(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+    function mdToHtml(md) {
+      var lineas = String(md).split(/\r?\n/);
+      var html = '', enLista = false;
+      function cerrarLista() { if (enLista) { html += '</ul>'; enLista = false; } }
+      for (var i = 0; i < lineas.length; i++) {
+        var l = lineas[i].trim();
+        if (l === '') { cerrarLista(); continue; }
+        if (l.indexOf('### ') === 0) { cerrarLista(); html += '<h3>' + negritas(l.slice(4)) + '</h3>'; }
+        else if (l.indexOf('## ') === 0) { cerrarLista(); html += '<h2>' + negritas(l.slice(3)) + '</h2>'; }
+        else if (l.indexOf('# ') === 0) { cerrarLista(); html += '<h1>' + negritas(l.slice(2)) + '</h1>'; }
+        else if (l.indexOf('- ') === 0) {
+          if (!enLista) { html += '<ul>'; enLista = true; }
+          html += '<li>' + negritas(l.slice(2)) + '</li>';
+        } else { cerrarLista(); html += '<p>' + negritas(l) + '</p>'; }
+      }
+      cerrarLista();
+      return html;
+    }
+
+    /* ---------------------------- Conexion IA ----------------------------- */
+    // URL del Worker de IA (desplegado en Cloudflare Workers).
+    var WORKER_URL = 'https://agc-informe-ia.meikimura2002.workers.dev';
+    // Para pruebas locales, usa `npx wrangler dev` en worker/ y descomenta la linea siguiente:
+    // var WORKER_URL = 'http://localhost:8787';
+
+    function mostrarEstado(msg) {
+      document.getElementById('resultArea').innerHTML = '<div class="placeholder">' + escaparHtml(msg) + '</div>';
+    }
+    function mostrarError(msg) {
+      document.getElementById('resultArea').innerHTML =
+        '<div class="doc"><p style="color:#ff6b7a"><strong>⚠ ' + escaparHtml(msg) + '</strong></p></div>';
+    }
+    function mostrarInforme(md, modelo) {
+      document.getElementById('resultArea').innerHTML = '<div class="doc">' + mdToHtml(md) +
+        '<div class="nota-sim">Generado por IA' + (modelo ? ' · modelo: ' + escaparHtml(modelo) : '') + '</div></div>';
+    }
+
+    /* ------------------------------ Interfaz ------------------------------ */
+    async function generar() {
+      var notas = document.getElementById('notesInput').value.trim();
+      var plantilla = document.getElementById('templateSelect').value;
+      var tono = document.getElementById('toneSelect').value;
+      if (!notas) { mostrarError('Escribe algunas notas antes de generar el informe.'); return; }
+
+      var btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      mostrarEstado('⏳ Generando informe con IA...');
+      try {
+        var resp = await fetch(WORKER_URL + '/api/generar', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes: notas, template: plantilla, tone: tono }),
+        });
+        var data = {};
+        try { data = await resp.json(); } catch (e) { /* respuesta no-JSON */ }
+        if (!resp.ok || !data.success) throw new Error(data && data.error ? data.error : ('HTTP ' + resp.status));
+        mostrarInforme(data.informe, data.modelo);
+        cargarHistorial();
+      } catch (e) {
+        mostrarError('No se pudo generar el informe: ' + e.message + ' (¿esta corriendo el Worker en ' + WORKER_URL + '?)');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', generar);
+
+    /* ------------------------------ Historial ------------------------------ */
+    async function cargarHistorial() {
+      var cont = document.getElementById('historialLista');
+      cont.innerHTML = '<div class="hist-vacio">Cargando historial...</div>';
+      try {
+        var resp = await fetch(WORKER_URL + '/api/historial');
+        var data = {};
+        try { data = await resp.json(); } catch (e) { /* no-JSON */ }
+        if (!resp.ok || !data.success) throw new Error(data && data.error ? data.error : ('HTTP ' + resp.status));
+        renderHistorial(data.informes || []);
+      } catch (e) {
+        cont.innerHTML = '<div class="hist-vacio">No se pudo cargar el historial (¿esta el Worker en linea?).</div>';
+      }
+    }
+    function renderHistorial(lista) {
+      var cont = document.getElementById('historialLista');
+      if (!lista.length) { cont.innerHTML = '<div class="hist-vacio">Aun no hay informes guardados.</div>'; return; }
+      cont.innerHTML = '';
+      lista.forEach(function (it) {
+        var div = document.createElement('div');
+        div.className = 'hist-item';
+        var snip = String(it.informe || '').replace(/[#*_>-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 100);
+        div.innerHTML = '<div class="h-tit">' + escaparHtml(it.plantilla) + '</div>' +
+          '<div class="h-meta">' + escaparHtml(it.tono) + ' · ' + escaparHtml(it.creado_en || '') + '</div>' +
+          '<div class="h-snip">' + escaparHtml(snip) + '</div>';
+        div.addEventListener('click', function () {
+          mostrarInforme(it.informe, it.modelo);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        cont.appendChild(div);
+      });
+    }
+    document.getElementById('toggleHist').addEventListener('click', function () {
+      var lista = document.getElementById('historialLista');
+      var oculto = lista.style.display === 'none';
+      lista.style.display = oculto ? '' : 'none';
+      this.textContent = oculto ? 'Ocultar' : 'Mostrar';
+    });
+
+    // Carga el historial al abrir la pagina.
+    cargarHistorial();
+
+    // Modo demo: rellena notas y genera al abrir con ?demo=1 (para capturas).
+    if (/[?&]demo=1/.test(location.search)) {
+      document.getElementById('notesInput').value =
+        'Reunion de seguimiento del proyecto del sitio web. Se reviso el avance general. Falta integrar la pasarela de pago. Juan entrega el diseno final el viernes. Se acordo lanzar una version beta el 30 de julio.';
+      generar();
+    }
+  </script>
+</body>
+</html>
