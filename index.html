@@ -149,7 +149,7 @@
   </main>
 
   <footer>
-    <span>InformeIA · Proyecto de portafolio full-stack con IA · Version inicial (informe de ejemplo simulado)</span>
+    <span>InformeIA · Proyecto de portafolio full-stack con IA · Cloudflare Workers AI + D1 (historial)</span>
   </footer>
 
   <script>
@@ -271,6 +271,18 @@
 
     // Carga el historial al abrir la pagina.
     cargarHistorial();
+
+    // Modo demo-historial: muestra el informe mas reciente del historial (sin llamar a la IA).
+    if (/[?&]demo=hist/.test(location.search)) {
+      (async function () {
+        try {
+          var resp = await fetch(WORKER_URL + '/api/historial');
+          var data = await resp.json();
+          renderHistorial(data.informes || []);
+          if (data.informes && data.informes.length) mostrarInforme(data.informes[0].informe, data.informes[0].modelo);
+        } catch (e) { /* si falla, se queda el placeholder */ }
+      })();
+    }
 
     // Modo demo: rellena notas y genera al abrir con ?demo=1 (para capturas).
     if (/[?&]demo=1/.test(location.search)) {
